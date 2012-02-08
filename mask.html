@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>mask</title>
+  <meta name="author" content="forresto">
+  <meta name="description" content="use a grayscale image as the alpha for another image" />
+  
+  <script src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  
+  <style type="text/css">
+    html, body {
+      margin: 0;
+      padding:0;
+      font-family: verdana;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="blend" width="320" height="240"></canvas>
+  
+  <script type="text/javascript">
+
+    var canvas = document.getElementById("blend");
+    var context = canvas.getContext("2d");
+
+    var alpha_img;
+    var color_img;
+    var blend_img;
+
+    var alpha_first = true;
+    var auto_send = true;
+    var invert = false;
+
+    function alpha (image) {
+      alpha_img = image;
+      if (canvas.width < image.width) {
+        canvas.width = image.width;
+      }
+      if (canvas.height < image.height) {
+        canvas.height = image.height;
+      }
+      if (!color_img) {
+        color_img = context.createImageData(image.width, image.height);
+        alpha_first = true;
+      }
+      // if (alpha_first) {
+        // Only one of the two inputs should be "hot"
+        blend();
+      // }
+    }
+
+    function color (image) {
+      color_img = image;
+      if (canvas.width < image.width) {
+        canvas.width = image.width;
+      }
+      if (canvas.height < image.height) {
+        canvas.height = image.height;
+      }
+      if (!alpha_img) {
+        alpha_img = context.createImageData(image.width, image.height);
+        alpha_first = false;
+      }
+      // if (!alpha_first) {
+        // Only one of the two inputs should be "hot"
+        blend();
+      // }
+    }
+
+    function blend () {
+      if (alpha_img && color_img) {
+        blend_img = context.createImageData(canvas.width, canvas.height);
+        // context.putImageData(color_img, 0, 0);
+        for (var i=0; i<blend_img.data.length; i+=4) {
+          if (alpha_img.data[i]) {
+            blend_img.data[i] = color_img.data[i];
+            blend_img.data[i+1] = color_img.data[i+1];
+            blend_img.data[i+2] = color_img.data[i+2];
+          }
+          var luminosity = Math.round(alpha_img.data[i] * 0.3 + alpha_img.data[i+1] * 0.59 + alpha_img.data[i+2] * 0.11);
+          blend_img.data[i+3] = (invert ? 255-luminosity : luminosity); // black (0) is full alpha
+        }
+        if (auto_send) {
+          send();
+        }
+        context.putImageData(blend_img, 0, 0);
+      }
+    }
+
+    function send () {
+      Meemoo.send("image", blend_img);
+    }
+
+    Meemoo
+      .setInfo({
+        title: "mask",
+        author: "forresto",
+        description: "use a grayscale image as the alpha for another image"
+      })
+      .addInputs({
+        color: {
+          action: color,
+          type: "image",
+          description: "color image"
+        },
+        alpha: {
+          action: alpha,
+          type: "image",
+          description: "image to use as alpha"
+        },
+        invert: {
+          action: function(_invert){
+            invert = (Boolean(_invert) && _invert != "false");
+          },
+          type: "boolean",
+          description: "if true white will be full transparent, if false black will be full transparent",
+          default: "false"
+        },
+        autosend: {
+          action: function(boo){
+            auto_send = (Boolean(boo) && boo != "false");
+          },
+          type: "boolean",
+          description: "will send on every blend if true",
+          default: "false"
+        },
+        send: {
+          action: send,
+          type: "bang",
+          description: "(re)sends the blended image"
+        }
+      })
+      .addOutputs({
+        image: {
+          type: "image"
+        }
+      });
+  </script>
+  
+</body>
+</html>
