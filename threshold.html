@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>threshold</title>
+  <meta name="author" content="forresto">
+  <meta name="description" content="image to monochrome via luminosity threshold" />
+  
+  <script src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  
+  <style type="text/css">
+    html, body {
+      margin: 0;
+      padding:0;
+      font-family: verdana;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="blend" width="320" height="240"></canvas>
+  
+  <script type="text/javascript">
+
+    var canvas = document.getElementById("blend");
+    var context = canvas.getContext("2d");
+    var blend_img;
+    var threshold = 128;
+    var invert = false;
+
+    function image (image) {
+
+      if (canvas.width != image.width) {
+        canvas.width = image.width;
+      }
+      if (canvas.height != image.height) {
+        canvas.height = image.height;
+      }
+
+      blend_img = context.createImageData(canvas.width, canvas.height);
+      for (var i=0; i<blend_img.data.length; i+=4) {
+        var luminosity = Math.round(image.data[i] * 0.3 + image.data[i+1] * 0.59 + image.data[i+2] * 0.11);
+        if ((invert ? luminosity < threshold : luminosity >= threshold )) {
+          blend_img.data[i] = 255;
+          blend_img.data[i+1] = 255;
+          blend_img.data[i+2] = 255;
+          blend_img.data[i+3] = 255;
+        } else {
+          blend_img.data[i] = 0;
+          blend_img.data[i+1] = 0;
+          blend_img.data[i+2] = 0;
+          blend_img.data[i+3] = 255;
+        }
+      }
+      send();
+      context.putImageData(blend_img, 0, 0);
+    }
+
+    function send () {
+      Meemoo.send("image", blend_img);
+    }
+
+    Meemoo
+      .setInfo({
+        title: "threshold",
+        author: "forresto",
+        description: "image to monochrome via luminosity threshold"
+      })
+      .addInputs({
+        image: {
+          action: image,
+          type: "image",
+          description: "image to process"
+        },
+        threshold: {
+          action: function (lum) {
+            threshold = lum;
+          },
+          type: "int",
+          min: 0,
+          max: 255,
+          description: "everything lighter than this gray",
+          default: threshold
+        },
+        invert: {
+          action: function(_invert){
+            invert = (Boolean(_invert) && _invert != "false");
+          },
+          type: "boolean",
+          description: "if true everything darker than the value",
+          default: invert
+        },
+        send: {
+          action: send,
+          type: "bang",
+          description: "(re)sends the blended image"
+        }
+      })
+      .addOutputs({
+        image: {
+          type: "image",
+          description: "monochrome image"
+        }
+      });
+  </script>
+  
+</body>
+</html>
