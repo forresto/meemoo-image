@@ -46,10 +46,11 @@
         color_img = context.createImageData(image.width, image.height);
         alpha_first = true;
       }
-      // if (alpha_first) {
+      blend();
+      if (!alpha_first && auto_send) {
         // Only one of the two inputs should be "hot"
-        blend();
-      // }
+        send();
+      }
     }
 
     function color (image) {
@@ -64,10 +65,11 @@
         alpha_img = context.createImageData(image.width, image.height);
         alpha_first = false;
       }
-      // if (!alpha_first) {
+      blend();
+      if (!alpha_first && auto_send) {
         // Only one of the two inputs should be "hot"
-        blend();
-      // }
+        send();
+      }
     }
 
     function blend () {
@@ -82,9 +84,6 @@
           }
           var luminosity = Math.round(alpha_img.data[i] * 0.3 + alpha_img.data[i+1] * 0.59 + alpha_img.data[i+2] * 0.11);
           blend_img.data[i+3] = (invert ? 255-luminosity : luminosity); // black (0) is full alpha
-        }
-        if (auto_send) {
-          send();
         }
         context.putImageData(blend_img, 0, 0);
       }
@@ -119,18 +118,18 @@
           description: "if true white will be full transparent, if false black will be full transparent",
           default: "false"
         },
-        autosend: {
-          action: function(boo){
-            auto_send = (Boolean(boo) && boo != "false");
-          },
-          type: "boolean",
-          description: "will send on every blend if true",
-          default: "false"
-        },
+        // autosend: {
+        //   action: function(boo){
+        //     auto_send = (Boolean(boo) && boo != "false");
+        //   },
+        //   type: "boolean",
+        //   description: "will send on every masking if true",
+        //   default: "true"
+        // },
         send: {
           action: send,
           type: "bang",
-          description: "(re)sends the blended image"
+          description: "(re)sends the masked image"
         }
       })
       .addOutputs({
