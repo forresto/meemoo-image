@@ -36,12 +36,12 @@
 
     function alpha (image) {
       alpha_img = image;
-      if (canvas.width < image.width) {
-        canvas.width = image.width;
-      }
-      if (canvas.height < image.height) {
-        canvas.height = image.height;
-      }
+      // if (canvas.width < image.width) {
+      //   canvas.width = image.width;
+      // }
+      // if (canvas.height < image.height) {
+      //   canvas.height = image.height;
+      // }
       if (!color_img) {
         color_img = context.createImageData(image.width, image.height);
         alpha_first = true;
@@ -55,10 +55,10 @@
 
     function color (image) {
       color_img = image;
-      if (canvas.width < image.width) {
+      if (canvas.width != image.width) {
         canvas.width = image.width;
       }
-      if (canvas.height < image.height) {
+      if (canvas.height != image.height) {
         canvas.height = image.height;
       }
       if (!alpha_img) {
@@ -76,7 +76,8 @@
       if (alpha_img && color_img) {
         blend_img = context.createImageData(canvas.width, canvas.height);
         // context.putImageData(color_img, 0, 0);
-        for (var i=0; i<blend_img.data.length; i+=4) {
+        var length = blend_img.data.length;
+        for (var i=0; i<length; i+=4) {
           if (alpha_img.data[i]) {
             blend_img.data[i] = color_img.data[i];
             blend_img.data[i+1] = color_img.data[i+1];
