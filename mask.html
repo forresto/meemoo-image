@@ -66,7 +66,7 @@
         alpha_first = false;
       }
       blend();
-      if (!alpha_first && auto_send) {
+      if (alpha_first && auto_send) {
         // Only one of the two inputs should be "hot"
         send();
       }
