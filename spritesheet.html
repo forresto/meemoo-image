@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>spritesheet</title>
+  <meta name="author" content="forresto">
+  <meta name="description" content="makes a single-image filmstrip sprite sheet" />
+  
+  <script src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  
+  <style type="text/css">
+    html, body {
+      margin: 0;
+      padding:0;
+      font-family: verdana;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="strip" width="1" height="1"></canvas>
+
+  <a href="#" onclick="saveImage()">save image</a>
+  
+  <script type="text/javascript">
+
+    var canvas = document.getElementById("strip");
+    var context = canvas.getContext("2d");
+
+    var w, h;
+    var count = 0;
+
+    function saveImage(){
+      window.open().document.write('<img src="'+canvas.toDataURL("image/png")+'"/>'); 
+      return false;
+    }
+
+    function addImage(image){
+      count++;
+      if (!w || !h) {
+        w = image.width;
+        h = image.height;
+        canvas.width = w;
+        canvas.height = h;
+        context.createImageData(w, h);
+      }
+      var strip = context.getImageData(0, 0, canvas.width, canvas.height);
+      canvas.height = h*count;
+      context.putImageData(strip, 0, 0);
+      context.putImageData(image, 0, h*(count-1));
+    }
+
+    function send(){
+      Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height));
+    }
+
+    function clear(){
+      w, h = undefined;
+      canvas.width = 0;
+      canvas.height = 0;
+      context.createImageData(canvas.width, canvas.height);
+    }
+
+    Meemoo
+      .setInfo({
+        title: "spritesheet",
+        author: "forresto",
+        description: "makes a single-image filmstrip sprite sheet"
+      })
+      .addInputs({
+        image: {
+          action: addImage,
+          type: "image",
+          description: "color image"
+        },
+        send: {
+          action: send,
+          type: "bang",
+          description: "(re)sends the image strip"
+        },
+        clear: {
+          action: clear,
+          type: "bang",
+          description: "clears the image strip"
+        }
+      })
+      .addOutputs({
+        image: {
+          type: "image"
+        }
+      });
+  </script>
+  
+</body>
+</html>

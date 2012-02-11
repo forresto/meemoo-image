@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>spritesplit</title>
+  <meta name="author" content="forresto">
+  <meta name="description" content="separates images from filmstrip sprite sheet" />
+  
+  <script src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  
+  <style type="text/css">
+    html, body {
+      margin: 0;
+      padding:0;
+      font-family: verdana;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="split" width="256" height="256"></canvas>
+
+  <div id="info"></div>
+
+  <script type="text/javascript">
+
+    var canvas = document.getElementById("split");
+    var context = canvas.getContext("2d");
+
+    var w;
+    var h;
+    var splitHeight = 256;
+    var count = 0;
+
+    function splitImage(image){
+      if (image) {
+        w = image.width;
+        h = image.height;
+        canvas.width = w;
+        canvas.height = h;
+        context.putImageData(image, 0, 0);
+      }
+      count = 0;
+      while (count*splitHeight < h) {
+        var split_canvas = document.createElement('canvas');
+        split_canvas.width = w;
+        split_canvas.height = splitHeight;
+        var split_canvas = split_canvas.getContext('2d');
+        var split_image = context.getImageData(0, count*splitHeight, w, splitHeight);
+        Meemoo.send("image", split_image);
+        count++;
+      }
+    }
+
+    function setHeight(_h) {
+      splitHeight = _h;
+    }
+
+    function send(){
+      splitImage();
+    }
+
+    Meemoo
+      .setInfo({
+        title: "spritesplit",
+        author: "forresto",
+        description: "separates images from filmstrip sprite sheet"
+      })
+      .addInputs({
+        image: {
+          action: splitImage,
+          type: "image",
+          description: "color image"
+        },
+        height: {
+          action: setHeight,
+          type: "int",
+          description: "height to split out",
+          min: 1,
+          default: splitHeight
+        },
+        send: {
+          action: send,
+          type: "bang",
+          description: "(re)sends the images"
+        }
+      })
+      .addOutputs({
+        image: {
+          type: "image"
+        }
+      });
+  </script>
+  
+</body>
+</html>
