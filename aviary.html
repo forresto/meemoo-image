@@ -29,12 +29,10 @@
   <div id="editor">Loading...</div>
   
   <div id="conversions">
-    <canvas id="canvasIn"></canvas>
-    <img id="imageIn" /><br />
+    <img id="imageIn" />
     <button id="editIn" type="button">edit</button>
     <button id="sendIn" type="button">send</button><br />
-    <canvas id="canvasOut"></canvas>
-    <img id="imageOut" /><br />
+    <img id="imageOut" />
     <button id="editOut" type="button">edit</button>
     <button id="sendOut" type="button">send</button>
   </div>
@@ -45,9 +43,11 @@
   
     var imageIn = document.getElementById("imageIn");
     var imageOut = document.getElementById("imageOut");
-    var canvasIn = document.getElementById("canvasIn");
+    // var canvasIn = document.getElementById("canvasIn");
+    var canvasIn = document.createElement("canvas");
     var contextIn = canvasIn.getContext("2d");
-    var canvasOut = document.getElementById("canvasOut");
+    // var canvasOut = document.getElementById("canvasOut");
+    var canvasOut = document.createElement("canvas");
     var contextOut = canvasOut.getContext("2d");
 
     var sendIn = function(){
@@ -78,12 +78,15 @@
       canvasIn.height = _image.height;
       contextIn.putImageData(_image, 0, 0);
 
+      imageIn.onload = function() {
+        myEditor.launch({
+          image: imageIn,
+          appendTo: editor
+        });
+      }
+
       imageIn.src = canvasIn.toDataURL("image/png");
 
-      myEditor.launch({
-        image: imageIn,
-        appendTo: editor
-      });
     }
 
     var myEditor = new Aviary.Feather({
