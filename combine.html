@@ -95,6 +95,11 @@
       Meemoo.send("image", context.getImageData(0,0,canvas.width, canvas.height) )
     }
 
+    function clear(){
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      forecontext.clearRect(0, 0, forecanvas.width, forecanvas.height);
+    }
+
     Meemoo
       .setInfo({
         title: "combine",
@@ -141,6 +146,11 @@
           type: "float",
           description: "rotate percentage",
           default: _rotate
+        },
+        clear: {
+          action: clear,
+          type: "bang",
+          description: "clear the canvas"
         }
       })
       .addOutputs({
