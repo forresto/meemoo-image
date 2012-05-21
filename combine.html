@@ -19,7 +19,7 @@
 </head>
 <body>
   
-  <canvas id="combine" width="320" height="240"></canvas>
+  <canvas id="combine" width="500" height="500"></canvas>
   
   <script type="text/javascript">
 
@@ -75,16 +75,23 @@
       _rotate = parseFloat(percent) * Math.PI * 2;
       combine();
     }
-    var combineLast;
-    var combineWait = 1000/30;
+    var combineLast = new Date();
+    var combineWait = 1000/60;
+    var combineTimeout;
     function combine(){
       // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
-      var d = new Date();
-      if (d-combineLast < combineWait){
-        return;
-      } else {
-        combineLast = d;
+      if (combineTimeout) {
+        clearTimeout(combineTimeout);
+        var d = new Date();
+        if (d-combineLast > 100){
+          // If tons of concurrent changes, still render occasionally
+          combineDo();
+        }
       }
+      combineTimeout = setTimeout(combineDo, combineWait)
+    }
+    function combineDo(){
+      combineLast = new Date();
       // Clear
       if (_clearEvery) {
         context.clearRect(0, 0, canvas.width, canvas.height);
@@ -108,9 +115,6 @@
       }
       Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) )
     }
-    function combineDo(){
-
-    }
 
     function clearEvery(boo){
       _clearEvery = boo;
@@ -127,7 +131,7 @@
       .setInfo({
         title: "combine",
         author: "forresto",
-        description: "Combine a background image with a (scaled, translated, rotated) foreground image."
+        description: "Combine a background image with a transformed foreground image (scale, translate, rotate)."
       })
       .addInputs({
         background: {
