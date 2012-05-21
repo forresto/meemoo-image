@@ -36,6 +36,7 @@
     var _translateX = 0
     var _translateY = 0
     var _rotate = 0;
+    var _clearEvery = true;
 
     function back(image){
       if (canvas.width !== image.width || canvas.height !== image.height) {
@@ -74,7 +75,20 @@
       _rotate = parseFloat(percent) * Math.PI * 2;
       combine();
     }
+    var combineLast;
+    var combineWait = 1000/30;
     function combine(){
+      // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
+      var d = new Date();
+      if (d-combineLast < combineWait){
+        return;
+      } else {
+        combineLast = d;
+      }
+      // Clear
+      if (_clearEvery) {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+      }
       if (_back) {
         context.putImageData(_back, 0, 0);
       }
@@ -92,11 +106,19 @@
         context.rotate(-_rotate);
         context.translate(-x, -y);
       }
-      Meemoo.send("image", context.getImageData(0,0,canvas.width, canvas.height) )
+      Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) )
+    }
+    function combineDo(){
+
+    }
+
+    function clearEvery(boo){
+      _clearEvery = boo;
     }
 
     function clear(){
       _back = undefined;
+      _fore = false;
       context.clearRect(0, 0, canvas.width, canvas.height);
       forecontext.clearRect(0, 0, forecanvas.width, forecanvas.height);
     }
@@ -147,6 +169,12 @@
           type: "float",
           description: "rotate percentage",
           default: _rotate
+        },
+        clearEvery: {
+          action: clearEvery,
+          type: "boolean",
+          description: "clear the canvas on every draw",
+          default: _clearEvery
         },
         clear: {
           action: clear,
