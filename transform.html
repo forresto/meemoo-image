@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>transform</title>
+  <meta name="author" content="forresto">
+  <meta name="description" content="scale, translate, and/or rotate image" />
+  
+  <script type="text/javascript" src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  
+  <style type="text/css">
+    html, body {
+      margin: 0;
+      padding:0;
+      font-family: verdana;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="combine" width="500" height="500" style="max-width:100%"></canvas>
+  
+  <script type="text/javascript">
+
+    var canvas = document.getElementById("combine");
+    var context = canvas.getContext("2d");
+
+    var forecanvas = document.createElement("canvas");
+    var forecontext = forecanvas.getContext("2d");
+
+    var _back;
+    var _fore = false; 
+    var _scaleX = 1;
+    var _scaleY = 1;
+    var _translateX = 0
+    var _translateY = 0
+    var _rotate = 0;
+    var _clearEvery = true;
+
+    function fore(image){
+      if (forecanvas.width !== image.width || forecanvas.height !== image.height) {
+        forecanvas.width = image.width;
+        forecanvas.height = image.height;
+      }
+      forecontext.putImageData(image, 0, 0);
+      _fore = true;
+      combine();
+    }
+    function scaleX(percent){
+      _scaleX = parseFloat(percent);
+      combine();
+    }
+    function scaleY(percent){
+      _scaleY = parseFloat(percent);
+      combine();
+    }
+    function translateX(pixels){
+      _translateX = parseFloat(pixels);
+      combine();
+    }
+    function translateY(pixels){
+      _translateY = parseFloat(pixels);
+      combine();
+    }
+    function rotate(percent){
+      _rotate = parseFloat(percent) * Math.PI * 2;
+      combine();
+    }
+    var combineLast = new Date();
+    var combineWait = 1000/60;
+    var combineTimeout;
+    function combine(){
+      // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
+      if (combineTimeout) {
+        clearTimeout(combineTimeout);
+        var d = new Date();
+        if (d-combineLast > 100){
+          // If tons of concurrent changes, still render occasionally
+          combineDo();
+        }
+      }
+      combineTimeout = setTimeout(combineDo, combineWait);
+    }
+    function combineDo(){
+      combineLast = new Date();
+      // Clear
+      if (_clearEvery) {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      if (_fore) {
+        var width = forecanvas.width * _scaleX;
+        var height = forecanvas.height * _scaleY;
+        var x = canvas.width/2 + _translateX;
+        var y = canvas.height/2 + _translateY;
+
+        // context.save();
+        context.translate(x, y);
+        context.rotate(_rotate);
+        context.drawImage(forecanvas, -width/2, -height/2, width, height);
+        // context.restore();
+        context.rotate(-_rotate);
+        context.translate(-x, -y);
+      }
+      Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
+    }
+
+    function clearEvery(boo){
+      _clearEvery = boo;
+    }
+
+    function clear(){
+      _fore = false;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      forecontext.clearRect(0, 0, forecanvas.width, forecanvas.height);
+    }
+
+    Meemoo
+      .setInfo({
+        title: "transform",
+        author: "forresto",
+        description: "scale, translate, and/or rotate image"
+      })
+      .addInputs({
+        image: {
+          action: fore,
+          type: "image",
+          description: "image to center and transform"
+        },
+        scaleX: {
+          action: scaleX,
+          type: "float",
+          description: "scale x percentage",
+          default: _scaleX
+        },
+        scaleY: {
+          action: scaleY,
+          type: "float",
+          description: "scale y percentage",
+          default: _scaleY
+        },
+        translateX: {
+          action: translateX,
+          type: "float",
+          description: "translate x pixels",
+          default: _translateX
+        },
+        translateY: {
+          action: translateY,
+          type: "float",
+          description: "translate y pixels",
+          default: _translateY
+        },
+        rotate: {
+          action: rotate,
+          type: "float",
+          description: "rotate percentage",
+          default: _rotate
+        },
+        clearEvery: {
+          action: clearEvery,
+          type: "boolean",
+          description: "clear the canvas on every draw",
+          default: _clearEvery
+        },
+        clear: {
+          action: clear,
+          type: "bang",
+          description: "clear the canvas"
+        }
+      })
+      .addOutputs({
+        image: {
+          type: "image"
+        }
+      });
+  </script>
+  
+</body>
+</html>

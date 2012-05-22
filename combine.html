@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>combine</title>
   <meta name="author" content="forresto">
-  <meta name="description" content="Combine a background image with a (scaled, translated, rotated) foreground image." />
+  <meta name="description" content="combine image layers" />
   
   <script type="text/javascript" src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
   
@@ -19,60 +19,54 @@
 </head>
 <body>
   
-  <canvas id="combine" width="500" height="500" style="max-width:100%"></canvas>
+  <canvas id="combine" width="100" height="100" style="max-width:100%"></canvas>
   
   <script type="text/javascript">
 
     var canvas = document.getElementById("combine");
     var context = canvas.getContext("2d");
 
-    var forecanvas = document.createElement("canvas");
-    var forecontext = forecanvas.getContext("2d");
+    var layers = [];
+    var canvases = [];
+    var contexts = [];
 
-    var _back;
-    var _fore = false; 
-    var _scaleX = 1;
-    var _scaleY = 1;
-    var _translateX = 0
-    var _translateY = 0
-    var _rotate = 0;
     var _clearEvery = true;
 
-    function back(image){
-      if (canvas.width !== image.width || canvas.height !== image.height) {
+    function layer1(image){
+      addLayer(image, 1);
+    }
+    function layer2(image){
+      addLayer(image, 2);
+    }
+    function layer3(image){
+      addLayer(image, 3);
+    }
+    function layer4(image){
+      addLayer(image, 4);
+    }
+    function layer5(image){
+      addLayer(image, 5);
+    }
+    function layer6(image){
+      addLayer(image, 6);
+    }
+    function layer7(image){
+      addLayer(image, 7);
+    }
+    function addLayer(image, layernumber) {
+      if (canvas.width < image.width || canvas.height < image.height) {
         canvas.width = image.width;
-        canvas.height = image.height
+        canvas.height = image.height;
       }
-      _back = image;
-      combine();
-    }
-    function fore(image){
-      if (forecanvas.width !== image.width || forecanvas.height !== image.height) {
-        forecanvas.width = image.width;
-        forecanvas.height = image.height
+      if (!layers[layernumber]) {
+        layers[layernumber] = document.createElement("canvas");
+      } 
+      var thisCanvas = layers[layernumber];
+      if (thisCanvas.width !== image.width || thisCanvas.height !== image.height) {
+        thisCanvas.width = image.width;
+        thisCanvas.height = image.height;
       }
-      forecontext.putImageData(image, 0, 0);
-      _fore = true;
-      combine();
-    }
-    function scaleX(percent){
-      _scaleX = parseFloat(percent);
-      combine();
-    }
-    function scaleY(percent){
-      _scaleY = parseFloat(percent);
-      combine();
-    }
-    function translateX(pixels){
-      _translateX = parseFloat(pixels);
-      combine();
-    }
-    function translateY(pixels){
-      _translateY = parseFloat(pixels);
-      combine();
-    }
-    function rotate(percent){
-      _rotate = parseFloat(percent) * Math.PI * 2;
+      thisCanvas.getContext("2d").putImageData(image, 0, 0);
       combine();
     }
     var combineLast = new Date();
@@ -88,7 +82,7 @@
           combineDo();
         }
       }
-      combineTimeout = setTimeout(combineDo, combineWait)
+      combineTimeout = setTimeout(combineDo, combineWait);
     }
     function combineDo(){
       combineLast = new Date();
@@ -96,94 +90,74 @@
       if (_clearEvery) {
         context.clearRect(0, 0, canvas.width, canvas.height);
       }
-      if (_back) {
-        context.putImageData(_back, 0, 0);
+      for (var i = 0; i < layers.length; i++) {
+        if (layers[i]) {
+          context.drawImage(layers[i], 0, 0);
+        }
       }
-      if (_fore) {
-        var width = forecanvas.width * _scaleX;
-        var height = forecanvas.height * _scaleY;
-        var x = canvas.width/2 + _translateX;
-        var y = canvas.height/2 + _translateY;
-
-        // context.save();
-        context.translate(x, y);
-        context.rotate(_rotate);
-        context.drawImage(forecanvas, -width/2, -height/2, width, height)
-        // context.restore();
-        context.rotate(-_rotate);
-        context.translate(-x, -y);
-      }
-      Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) )
-    }
-
-    function clearEvery(boo){
-      _clearEvery = boo;
+      send();
     }
 
     function clear(){
-      _back = undefined;
-      _fore = false;
+      layers = [];
       context.clearRect(0, 0, canvas.width, canvas.height);
-      forecontext.clearRect(0, 0, forecanvas.width, forecanvas.height);
+    }
+
+    function send(){
+      Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
     }
 
     Meemoo
       .setInfo({
         title: "combine",
         author: "forresto",
-        description: "Combine a background image with a transformed foreground image (scale, translate, rotate)."
+        description: "combine image layers"
       })
       .addInputs({
-        background: {
-          action: back,
+        layer1: {
+          action: layer1,
           type: "image",
-          description: "over or foreground image"
+          description: "first image layer"
         },
-        foreground: {
-          action: fore,
+        layer2: {
+          action: layer2,
           type: "image",
-          description: "under or background image"
+          description: "image layer"
         },
-        scaleX: {
-          action: scaleX,
-          type: "float",
-          description: "scale x percentage",
-          default: _scaleX
+        layer3: {
+          action: layer3,
+          type: "image",
+          description: "image layer"
         },
-        scaleY: {
-          action: scaleY,
-          type: "float",
-          description: "scale y percentage",
-          default: _scaleY
+        layer4: {
+          action: layer4,
+          type: "image",
+          description: "image layer"
         },
-        translateX: {
-          action: translateX,
-          type: "float",
-          description: "translate x pixels",
-          default: _translateX
+        layer5: {
+          action: layer5,
+          type: "image",
+          description: "image layer"
         },
-        translateY: {
-          action: translateY,
-          type: "float",
-          description: "translate y pixels",
-          default: _translateY
+        layer6: {
+          action: layer6,
+          type: "image",
+          description: "image layer"
         },
-        rotate: {
-          action: rotate,
-          type: "float",
-          description: "rotate percentage",
-          default: _rotate
-        },
-        clearEvery: {
-          action: clearEvery,
-          type: "boolean",
-          description: "clear the canvas on every draw",
-          default: _clearEvery
+        layer7: {
+          action: layer7,
+          type: "image",
+          description: "image layer"
         },
         clear: {
           action: clear,
           type: "bang",
           description: "clear the canvas"
+        },
+        send: {
+          action: send,
+          type: "bang",
+          description: "send the combined canvas"
         }
       })
       .addOutputs({
