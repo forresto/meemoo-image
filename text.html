@@ -36,6 +36,7 @@
     var _strokewidth = 1;
 
     function setCanvasSize(w, h) {
+      if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w;
         canvas.height = h;
         // Restore styles
@@ -43,12 +44,11 @@
         context.fillStyle = _fillcolor;
         context.strokeStyle = _strokecolor;
         context.lineWidth = _strokewidth;
+      }
     }
 
     function background(image){
-      if (canvas.width !== image.width || canvas.height !== image.height) {
-        setCanvasSize(image.width, image.height);
-      }
+      setCanvasSize(image.width, image.height);
       _background = image;
       combine();
     }
@@ -108,7 +108,7 @@
       } else {
         // size canvas to fit text
         var newWidth = 2*_x+context.measureText(_text).width;
-        var newHeight = 1.2*_y;
+        var newHeight = 1.25*_y;
         setCanvasSize(newWidth, newHeight);
       }
       if (_text !== "") {
