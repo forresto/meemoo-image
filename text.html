@@ -31,6 +31,7 @@
     var _x = 10; 
     var _y = 40;
     var _font = "bold 30px Tahoma";
+    var _fontsize = 30;
     var _fillcolor = "white";
     var _strokecolor = "black";
     var _strokewidth = 1;
@@ -67,6 +68,8 @@
     function setFont(font){
       _font = font;
       context.font = _font;
+      var pattern = /[0-9]+/;
+      _fontsize = parseFloat( _font.match(pattern) );
       combine();
     }
     function setFillColor(color){
@@ -108,7 +111,11 @@
       } else {
         // size canvas to fit text
         var newWidth = 2*_x+context.measureText(_text).width;
-        var newHeight = 1.25*_y;
+        if (_fontsize === _fontsize) {
+          var newHeight = _y + _fontsize * 1.5;
+        } else {
+          var newHeight = 1.3*_y;
+        }
         setCanvasSize(newWidth, newHeight);
       }
       if (_text !== "") {
