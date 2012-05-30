@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>text</title>
+  <meta name="author" content="forresto">
+  <meta name="description" content="add text to an image" />
+  
+  <script type="text/javascript" src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  
+  <style type="text/css">
+    html, body {
+      margin: 0;
+      padding:0;
+      font-family: verdana;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="combine" width="500" height="500" style="max-width:100%"></canvas>
+  
+  <script type="text/javascript">
+
+    var canvas = document.getElementById("combine");
+    var context = canvas.getContext("2d");
+
+    var _background;
+    var _text = "";
+    var _x = 10; 
+    var _y = 40;
+    var _font = "bold 30px Tahoma";
+    var _fillcolor = "white";
+    var _strokecolor = "black";
+    var _strokewidth = 1;
+
+    function setCanvasSize(w, h) {
+        canvas.width = w;
+        canvas.height = h;
+        // Restore styles
+        context.font = _font;
+        context.fillStyle = _fillcolor;
+        context.strokeStyle = _strokecolor;
+        context.lineWidth = _strokewidth;
+    }
+
+    function background(image){
+      if (canvas.width !== image.width || canvas.height !== image.height) {
+        setCanvasSize(image.width, image.height);
+      }
+      _background = image;
+      combine();
+    }
+    function setText(string){
+      _text = string;
+      combine();
+    }
+    function setX(px){
+      _x = parseFloat(px);
+      combine();
+    }
+    function setY(px){
+      _y = parseFloat(px);
+      combine();
+    }
+    function setFont(font){
+      _font = font;
+      context.font = _font;
+      combine();
+    }
+    function setFillColor(color){
+      _fillcolor = color;
+      context.fillStyle = _fillcolor;
+      combine();
+    }
+    function setStrokeColor(color){
+      _strokecolor = color;
+      context.strokeStyle = _strokecolor;
+      combine();
+    }
+    function setStrokeWidth(px){
+      _strokewidth = parseFloat(px);
+      context.lineWidth = _strokewidth;
+      combine();
+    }
+    var combineLast = new Date();
+    var combineWait = 1000/30;
+    var combineTimeout;
+    function combine(){
+      // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
+      if (combineTimeout) {
+        clearTimeout(combineTimeout);
+        var d = new Date();
+        if (d-combineLast > 100){
+          // If tons of concurrent changes, still render occasionally
+          combineDo();
+        }
+      }
+      combineTimeout = setTimeout(combineDo, combineWait);
+    }
+    function combineDo(){
+      combineLast = new Date();
+      // Clear
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      if (_background) {
+        context.putImageData(_background, 0, 0);
+      } else {
+        // size canvas to fit text
+        var newWidth = 2*_x+context.measureText(_text).width;
+        var newHeight = 1.2*_y;
+        setCanvasSize(newWidth, newHeight);
+      }
+      if (_text !== "") {
+        var maxwidth = canvas.width - _x;
+        if (_fillcolor !== "") {
+          context.fillText(_text, _x, _y, maxwidth);
+        }
+        if (_strokecolor !== "") {
+          context.strokeText(_text, _x, _y, maxwidth);
+        }
+      }
+      send();
+    }
+
+    function clear(){
+      _background = undefined;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function send(){
+      Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
+    }
+
+    Meemoo
+      .setInfo({
+        title: "text",
+        author: "forresto",
+        description: "add text to an image"
+      })
+      .addInputs({
+        background: {
+          action: background,
+          type: "image",
+          description: "background image"
+        },
+        text: {
+          action: setText,
+          type: "string",
+          description: "text to add to image",
+          default: _text
+        },
+        x: {
+          action: setX,
+          type: "float",
+          description: "x position, in pixels",
+          default: _x
+        },
+        y: {
+          action: setY,
+          type: "float",
+          description: "y position, in pixels",
+          default: _y
+        },
+        font: {
+          action: setFont,
+          type: "string",
+          description: "font settings. example: \"18pt Courier New\" or \"bold 36px Tahoma\"",
+          default: _font
+        },
+        fillcolor: {
+          action: setFillColor,
+          type: "string",
+          description: "fill color. example: \"black\" or \"#FF0000\" or \"rgba(0, 255, 0, 0.5)\"",
+          default: _fillcolor
+        },
+        strokecolor: {
+          action: setStrokeColor,
+          type: "string",
+          description: "stroke color. example: \"black\" or \"#FF0000\" or \"rgba(0, 255, 0, 0.5)\"",
+          default: _strokecolor
+        },
+        strokewidth: {
+          action: setStrokeWidth,
+          type: "float",
+          description: "stroke width, in pixels",
+          default: _strokewidth
+        },
+        // clear: {
+        //   action: clear,
+        //   type: "bang",
+        //   description: "clear the canvas"
+        // },
+        send: {
+          action: send,
+          type: "bang",
+          description: "send the image"
+        }
+      })
+      .addOutputs({
+        image: {
+          type: "image"
+        }
+      });
+  </script>
+  
+</body>
+</html>
