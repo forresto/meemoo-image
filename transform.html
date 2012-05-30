@@ -31,8 +31,7 @@
 
     var _back;
     var _fore = false; 
-    var _scaleX = 1;
-    var _scaleY = 1;
+    var _scale = 1;
     var _translateX = 0;
     var _translateY = 0;
     var _rotate = 0;
@@ -55,12 +54,8 @@
       _fore = true;
       combine();
     }
-    function scaleX(percent){
-      _scaleX = parseFloat(percent);
-      combine();
-    }
-    function scaleY(percent){
-      _scaleY = parseFloat(percent);
+    function scale(percent){
+      _scale = parseFloat(percent);
       combine();
     }
     function translateX(pixels){
@@ -100,8 +95,8 @@
         context.putImageData(_back, 0, 0);
       }
       if (_fore) {
-        var width = forecanvas.width * _scaleX;
-        var height = forecanvas.height * _scaleY;
+        var width = forecanvas.width * _scale;
+        var height = forecanvas.height * _scale;
         var x = canvas.width/2 + _translateX;
         var y = canvas.height/2 + _translateY;
 
@@ -150,17 +145,11 @@
           type: "image",
           description: "image to center and transform"
         },
-        scaleX: {
-          action: scaleX,
+        scale: {
+          action: scale,
           type: "float",
-          description: "scale x percentage",
-          default: _scaleX
-        },
-        scaleY: {
-          action: scaleY,
-          type: "float",
-          description: "scale y percentage",
-          default: _scaleY
+          description: "scale percentage",
+          default: _scale
         },
         translateX: {
           action: translateX,
