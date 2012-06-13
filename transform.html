@@ -77,11 +77,11 @@
       // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
       if (combineTimeout) {
         clearTimeout(combineTimeout);
-        var d = new Date();
-        if (d-combineLast > 100){
-          // If tons of concurrent changes, still render occasionally
-          combineDo();
-        }
+        // var d = new Date();
+        // if (d-combineLast > 100){
+        //   // If tons of concurrent changes, still render occasionally
+        //   combineDo();
+        // }
       }
       combineTimeout = setTimeout(combineDo, combineWait);
     }
