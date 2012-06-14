@@ -120,10 +120,10 @@
       }
       if (_text !== "") {
         var maxwidth = canvas.width - _x;
-        if (_fillcolor !== "") {
+        if (_fillcolor && _fillcolor !== "") {
           context.fillText(_text, _x, _y, maxwidth);
         }
-        if (_strokecolor !== "") {
+        if (_strokecolor && _strokecolor !== "" && _strokeWidth && _strokeWidth>0) {
           context.strokeText(_text, _x, _y, maxwidth);
         }
       }
