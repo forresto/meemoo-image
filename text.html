@@ -87,7 +87,7 @@
       context.lineWidth = _strokewidth;
       combine();
     }
-    var combineLast = new Date();
+    // var combineLast = new Date();
     var combineWait = 1000/30;
     var combineTimeout;
     function combine(){
@@ -103,7 +103,7 @@
       combineTimeout = setTimeout(combineDo, combineWait);
     }
     function combineDo(){
-      combineLast = new Date();
+      // combineLast = new Date();
       // Clear
       context.clearRect(0, 0, canvas.width, canvas.height);
       if (_background) {
@@ -123,7 +123,7 @@
         if (_fillcolor && _fillcolor !== "") {
           context.fillText(_text, _x, _y, maxwidth);
         }
-        if (_strokecolor && _strokecolor !== "" && _strokeWidth && _strokeWidth>0) {
+        if (_strokecolor && _strokecolor !== "" && _strokewidth && _strokewidth>0) {
           context.strokeText(_text, _x, _y, maxwidth);
         }
       }
