@@ -130,6 +130,10 @@
       Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
     }
 
+    // HACK send one 2s after load
+    setTimeout(combineDo, 2000);
+
+
     Meemoo
       .setInfo({
         title: "rectangle",
