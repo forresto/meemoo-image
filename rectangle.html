@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>rectangle</title>
+  <meta name="author" content="forresto">
+  <meta name="description" content="draw a rectangle" />
+  
+  <script type="text/javascript" src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  
+  <style type="text/css">
+    html, body {
+      margin: 0;
+      padding:0;
+      font-family: verdana;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="combine" width="500" height="500" style="max-width:100%"></canvas>
+  
+  <script type="text/javascript">
+
+    var canvas = document.getElementById("combine");
+    var context = canvas.getContext("2d");
+
+    var _background;
+    var _x = 0;
+    var _y = 0;
+    var _w = 500;
+    var _h = 500;
+    var _color = "rgba(255,255,255,1)";
+    var _stroke = "";
+    var _strokeWidth = 0;
+
+    function setBackground(image){
+      _background = image;
+      combine();
+    }
+    function setX(f){
+      _x = parseFloat(f);
+      combine();
+    }
+    function setY(f){
+      _y = parseFloat(f);
+      combine();
+    }
+    function setW(f){
+      _w = parseFloat(f);
+      combine();
+    }
+    function setH(f){
+      _h = parseFloat(f);
+      combine();
+    }
+    function setColor(c){
+      _color = c;
+      context.fillStyle = _color;
+      combine();
+    }
+    function setStroke(c){
+      _stroke = c;
+      context.strokeStyle = _stroke;
+      combine();
+    }
+    function setStrokeWidth(f){
+      _strokeWidth = parseFloat(f);
+      if (_strokeWidth !== _strokeWidth) {
+        // NaN
+        _strokeWidth = 0;
+      }
+      context.lineWidth = _strokeWidth;
+      combine();
+    }
+    var combineWait = 1000/30;
+    var combineTimeout;
+    function combine(){
+      // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
+      if (combineTimeout) {
+        clearTimeout(combineTimeout);
+      }
+      combineTimeout = setTimeout(combineDo, combineWait);
+    }
+    function combineDo(){
+      // Clear
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Resize if needed
+      if (_background && (canvas.width !== _background.width || canvas.height !== _background.height) ) {
+        canvas.width = _background.width;
+        canvas.height = _background.height;
+        context.fillStyle = _color;
+        context.strokeStyle = _stroke;
+        context.lineWidth = _strokeWidth;
+      } 
+      else if (!_background && (canvas.width !== _x+_w+(_strokeWidth/2) || canvas.height !== _y+_h+(_strokeWidth/2)) ) {
+        canvas.width = _x+_w+(_strokeWidth/2);
+        canvas.height = _y+_h+(_strokeWidth/2);
+        context.fillStyle = _color;
+        context.strokeStyle = _stroke;
+        context.lineWidth = _strokeWidth;
+      }
+
+      // Background
+      if (_background) {
+        context.putImageData(_background, 0, 0);
+      }
+
+      // Rectangle
+      if (_color && _color !=="") {
+        context.fillRect(_x, _y, _w, _h);  
+      }
+
+      // Stroke
+      if (_stroke && _stroke !=="" && _strokeWidth && _strokeWidth>0) {
+        context.strokeRect(_x, _y, _w, _h);  
+      }
+
+      send();
+    }
+
+    function clear(){
+      _background = null;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function send(){
+      Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
+    }
+
+    Meemoo
+      .setInfo({
+        title: "rectangle",
+        author: "forresto",
+        description: "draw a rectangle"
+      })
+      .addInputs({
+        background: {
+          action: setBackground,
+          type: "image",
+          description: "first image layer"
+        },
+        x: {
+          action: setX,
+          type: "float",
+          description: "x of top-left corner"
+        },
+        y: {
+          action: setY,
+          type: "float",
+          description: "y of top-left corner"
+        },
+        w: {
+          action: setW,
+          type: "float",
+          description: "rectangle width"
+        },
+        h: {
+          action: setH,
+          type: "float",
+          description: "rectangle height"
+        },
+        color: {
+          action: setColor,
+          type: "string",
+          description: "fill color"
+        },
+        stroke: {
+          action: setStroke,
+          type: "string",
+          description: "stroke color"
+        },
+        strokewidth: {
+          action: setStrokeWidth,
+          type: "float",
+          description: "stroke width"
+        },
+        clear: {
+          action: clear,
+          type: "bang",
+          description: "clear the canvas"
+        },
+        send: {
+          action: send,
+          type: "bang",
+          description: "send the combined canvas"
+        }
+      })
+      .addOutputs({
+        image: {
+          type: "image"
+        }
+      });
+  </script>
+  
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>circle</title>
+  <meta name="author" content="forresto">
+  <meta name="description" content="draw a circle or an arc" />
+  
+  <script type="text/javascript" src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  
+  <style type="text/css">
+    html, body {
+      margin: 0;
+      padding:0;
+      font-family: verdana;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="combine" width="500" height="500" style="max-width:100%"></canvas>
+  
+  <script type="text/javascript">
+
+    var canvas = document.getElementById("combine");
+    var context = canvas.getContext("2d");
+
+    var TWOPI = Math.PI*2;
+
+    var _background;
+    var _x = 250;
+    var _y = 250;
+    var _r = 250;
+    var _startPercent = 0;
+    var _startAngle = (_startPercent-0.25) * TWOPI;
+    var _endPercent = 1;
+    var _endAngle = (_endPercent-0.25) * TWOPI;
+    var _color = "rgba(50%, 50%, 50%, 1)";
+    var _stroke = "rgba(0,0,0,1)";
+    var _strokeWidth = 0;
+
+    function setBackground(image){
+      _background = image;
+      combine();
+    }
+    function setX(f){
+      _x = parseFloat(f);
+      combine();
+    }
+    function setY(f){
+      _y = parseFloat(f);
+      combine();
+    }
+    function setR(f){
+      _r = parseFloat(f);
+      combine();
+    }
+    function setStart(f){
+      _startPercent = parseFloat(f);
+      if (_startPercent === _startPercent) {
+        _startAngle = (_startPercent-0.25) * TWOPI;
+      } else {
+        // NaN
+        _startAngle = -0.25 * TWOPI;
+      }
+      combine();
+    }
+    function setEnd(f){
+      _endPercent = parseFloat(f);
+      if (_endPercent === _endPercent) {
+        _endAngle = (_endPercent-0.25) * TWOPI;
+      } else {
+        // NaN
+        _endAngle = 0.75 * TWOPI;
+      }
+      combine();
+    }
+    function setColor(c){
+      _color = c;
+      context.fillStyle = _color;
+      combine();
+    }
+    function setStroke(c){
+      _stroke = c;
+      context.strokeStyle = _stroke;
+      combine();
+    }
+    function setStrokeWidth(f){
+      _strokeWidth = parseFloat(f);
+      if (_strokeWidth !== _strokeWidth) {
+        // NaN
+        _strokeWidth = 0;
+      }
+      context.lineWidth = _strokeWidth;
+      combine();
+    }
+    var combineWait = 1000/30;
+    var combineTimeout;
+    function combine(){
+      // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
+      if (combineTimeout) {
+        clearTimeout(combineTimeout);
+      }
+      combineTimeout = setTimeout(combineDo, combineWait);
+    }
+    function combineDo(){
+      // Clear
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Resize if needed
+      if (_background && (canvas.width !== _background.width || canvas.height !== _background.height) ) {
+        canvas.width = _background.width;
+        canvas.height = _background.height;
+        context.fillStyle = _color;
+        context.strokeStyle = _stroke;
+        context.lineWidth = _strokeWidth;
+      } 
+      else if (!_background && (canvas.width !== _x+_r+(_strokeWidth/2) || canvas.height !== _y+_r+(_strokeWidth/2)) ) {
+        canvas.width = _x+_r+(_strokeWidth/2);
+        canvas.height = _y+_r+(_strokeWidth/2);
+        context.fillStyle = _color;
+        context.strokeStyle = _stroke;
+        context.lineWidth = _strokeWidth;
+      }
+
+      // Background
+      if (_background) {
+        context.putImageData(_background, 0, 0);
+      }
+
+      // Arc
+      if (_color && _color !=="") {
+        context.beginPath();
+        context.arc(_x, _y, _r, _startAngle, _endAngle);  
+        context.fill();  
+      }
+
+      // Stroke
+      if (_stroke && _stroke !=="" && _strokeWidth && _strokeWidth>0) {
+        context.beginPath();
+        context.arc(_x, _y, _r, _startAngle, _endAngle);  
+        context.stroke();  
+      }
+
+      send();
+    }
+
+    function clear(){
+      _background = null;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function send(){
+      Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
+    }
+
+    Meemoo
+      .setInfo({
+        title: "circle",
+        author: "forresto",
+        description: "draw a circle or an arc"
+      })
+      .addInputs({
+        background: {
+          action: setBackground,
+          type: "image",
+          description: "first image layer"
+        },
+        x: {
+          action: setX,
+          type: "float",
+          description: "x of center",
+          default: _x
+        },
+        y: {
+          action: setY,
+          type: "float",
+          description: "y of center",
+          default: _y
+        },
+        r: {
+          action: setR,
+          type: "float",
+          description: "circle or arc radius",
+          default: _r
+        },
+        start: {
+          action: setStart,
+          type: "float",
+          description: "start angle percentage",
+          default: _startPercent
+        },
+        end: {
+          action: setEnd,
+          type: "float",
+          description: "end angle percentage",
+          default: _endPercent
+        },
+        color: {
+          action: setColor,
+          type: "string",
+          description: "fill color",
+          default: _color
+        },
+        stroke: {
+          action: setStroke,
+          type: "string",
+          description: "stroke color",
+          default: _stroke
+        },
+        strokewidth: {
+          action: setStrokeWidth,
+          type: "float",
+          description: "stroke width",
+          default: _strokeWidth
+        },
+        clear: {
+          action: clear,
+          type: "bang",
+          description: "clear the canvas"
+        },
+        send: {
+          action: send,
+          type: "bang",
+          description: "send the canvas"
+        }
+      })
+      .addOutputs({
+        image: {
+          type: "image"
+        }
+      });
+  </script>
+  
+</body>
+</html>
