@@ -70,18 +70,12 @@
       _rotate = parseFloat(percent) * Math.PI * 2;
       combine();
     }
-    var combineLast = new Date();
-    var combineWait = 1000/30;
+    var combineWait = 10;
     var combineTimeout;
     function combine(){
       // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
       if (combineTimeout) {
         clearTimeout(combineTimeout);
-        // var d = new Date();
-        // if (d-combineLast > 100){
-        //   // If tons of concurrent changes, still render occasionally
-        //   combineDo();
-        // }
       }
       combineTimeout = setTimeout(combineDo, combineWait);
     }

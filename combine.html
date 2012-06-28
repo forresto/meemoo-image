@@ -54,8 +54,10 @@
       addLayer(image, 7);
     }
     function addLayer(image, layernumber) {
-      if (canvas.width < image.width || canvas.height < image.height) {
+      if (canvas.width < image.width) {
         canvas.width = image.width;
+      }
+      if (canvas.height < image.height) {
         canvas.height = image.height;
       }
       if (!layers[layernumber]) {
@@ -69,27 +71,17 @@
       thisCanvas.getContext("2d").putImageData(image, 0, 0);
       combine();
     }
-    var combineLast = new Date();
-    var combineWait = 1000/30;
+    var combineWait = 10;
     var combineTimeout;
     function combine(){
       // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
       if (combineTimeout) {
         clearTimeout(combineTimeout);
-        // var d = new Date();
-        // if (d-combineLast > 100){
-        //   // If tons of concurrent changes, still render occasionally
-        //   combineDo();
-        // }
       }
       combineTimeout = setTimeout(combineDo, combineWait);
     }
     function combineDo(){
-      combineLast = new Date();
-      // Clear
-      if (_clearEvery) {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-      }
+      context.clearRect(0, 0, canvas.width, canvas.height);
       for (var i = 0; i < layers.length; i++) {
         if (layers[i]) {
           context.drawImage(layers[i], 0, 0);
