@@ -93,15 +93,20 @@
       context.clearRect(0, 0, canvas.width, canvas.height);
 
       // Resize if needed
-      if (_background && (canvas.width !== _background.width || canvas.height !== _background.height) ) {
-        canvas.width = _background.width;
-        canvas.height = _background.height;
-        setStyles();
-      } 
-      else if (!_background && (canvas.width !== _x*2+_w || canvas.height !== _y*2+_h) ) {
-        canvas.width = _x*2+_w;
-        canvas.height = _y*2+_h;
-        setStyles();
+      if (_background) {
+        if (canvas.width !== _background.width || canvas.height !== _background.height) {
+          canvas.width = _background.width;
+          canvas.height = _background.height;
+          setStyles();
+        }
+      } else {
+        var newW = Math.max(0, _x)*2+_w;
+        var newH = Math.max(0, _y)*2+_h;
+        if (canvas.width !== newW || canvas.height !== newH) {
+          canvas.width = newW;
+          canvas.height = newH;
+          setStyles();
+        }
       }
 
       // Background
