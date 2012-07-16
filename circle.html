@@ -29,14 +29,14 @@
     var TWOPI = Math.PI*2;
 
     var _background;
-    var _x = 250;
-    var _y = 250;
-    var _r = 250;
+    var _x = 100;
+    var _y = 100;
+    var _r = 100;
     var _startPercent = 0;
     var _startAngle = (_startPercent-0.25) * TWOPI;
     var _endPercent = 1;
     var _endAngle = (_endPercent-0.25) * TWOPI;
-    var _color = "rgba(50%, 50%, 50%, 1)";
+    var _color = "rgba(50%, 50%, 50%, .5)";
     var _stroke = "rgba(0,0,0,1)";
     var _strokeWidth = 0;
 
@@ -104,6 +104,11 @@
       }
       combineTimeout = setTimeout(combineDo, combineWait);
     }
+    function setStyles(){
+      context.fillStyle = _color;
+      context.strokeStyle = _stroke;
+      context.lineWidth = _strokeWidth;
+    }
     function combineDo(){
       // Clear
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -112,16 +117,12 @@
       if (_background && (canvas.width !== _background.width || canvas.height !== _background.height) ) {
         canvas.width = _background.width;
         canvas.height = _background.height;
-        context.fillStyle = _color;
-        context.strokeStyle = _stroke;
-        context.lineWidth = _strokeWidth;
+        setStyles();
       } 
-      else if (!_background && (canvas.width !== _x+_r+(_strokeWidth/2) || canvas.height !== _y+_r+(_strokeWidth/2)) ) {
-        canvas.width = _x+_r+(_strokeWidth/2);
-        canvas.height = _y+_r+(_strokeWidth/2);
-        context.fillStyle = _color;
-        context.strokeStyle = _stroke;
-        context.lineWidth = _strokeWidth;
+      else if (!_background && (canvas.width !== (_x-_r)*2 + _r*2 || canvas.height !== (_y-_r)*2 + _r*2) ) {
+        canvas.width = (_x-_r)*2 + _r*2;
+        canvas.height = (_y-_r)*2 + _r*2;
+        setStyles();
       }
 
       // Background

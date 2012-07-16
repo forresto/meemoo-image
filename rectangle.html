@@ -29,9 +29,9 @@
     var _background;
     var _x = 0;
     var _y = 0;
-    var _w = 500;
-    var _h = 500;
-    var _color = "rgba(255,255,255,1)";
+    var _w = 100;
+    var _h = 100;
+    var _color = "rgba(200,100,0,0.5)";
     var _stroke = "";
     var _strokeWidth = 0;
 
@@ -83,6 +83,11 @@
       }
       combineTimeout = setTimeout(combineDo, combineWait);
     }
+    function setStyles(){
+      context.fillStyle = _color;
+      context.strokeStyle = _stroke;
+      context.lineWidth = _strokeWidth;
+    }
     function combineDo(){
       // Clear
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -91,16 +96,12 @@
       if (_background && (canvas.width !== _background.width || canvas.height !== _background.height) ) {
         canvas.width = _background.width;
         canvas.height = _background.height;
-        context.fillStyle = _color;
-        context.strokeStyle = _stroke;
-        context.lineWidth = _strokeWidth;
+        setStyles();
       } 
-      else if (!_background && (canvas.width !== _x+_w+(_strokeWidth/2) || canvas.height !== _y+_h+(_strokeWidth/2)) ) {
-        canvas.width = _x+_w+(_strokeWidth/2);
-        canvas.height = _y+_h+(_strokeWidth/2);
-        context.fillStyle = _color;
-        context.strokeStyle = _stroke;
-        context.lineWidth = _strokeWidth;
+      else if (!_background && (canvas.width !== _x*2+_w || canvas.height !== _y*2+_h) ) {
+        canvas.width = _x*2+_w;
+        canvas.height = _y*2+_h;
+        setStyles();
       }
 
       // Background
@@ -149,37 +150,44 @@
         x: {
           action: setX,
           type: "float",
-          description: "x of top-left corner"
+          description: "x of top-left corner",
+          "default": _x
         },
         y: {
           action: setY,
           type: "float",
-          description: "y of top-left corner"
+          description: "y of top-left corner",
+          "default": _y
         },
         w: {
           action: setW,
           type: "float",
-          description: "rectangle width"
+          description: "rectangle width",
+          "default": _w
         },
         h: {
           action: setH,
           type: "float",
-          description: "rectangle height"
+          description: "rectangle height",
+          "default": _h
         },
         color: {
           action: setColor,
           type: "string",
-          description: "fill color"
+          description: "fill color",
+          "default": _color
         },
         stroke: {
           action: setStroke,
           type: "string",
-          description: "stroke color"
+          description: "stroke color",
+          "default": _stroke
         },
         strokewidth: {
           action: setStrokeWidth,
           type: "float",
-          description: "stroke width"
+          description: "stroke width",
+          "default": _strokeWidth
         },
         clear: {
           action: clear,
