@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>crop</title>
+  <meta name="author" content="meemoo">
+  <meta name="description" content="crop image" />
+  
+  <script type="text/javascript" src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  <!-- // <script type="text/javascript" src="/meemoo/v1/meemoo.js"></script> -->
+  <!-- // <script type="text/javascript" src="/transform-handles/transform-handles.js"></script> -->
+  
+  <style type="text/css">
+    html, body {
+      margin: 0;
+      padding:0;
+      font-family: verdana;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- <canvas id="canvas" width="500" height="500" style="max-width:100%"></canvas> -->
+  <canvas id="canvas" width="500" height="500"></canvas>
+
+  <div id="crop" style="border:1px dotted green; position: absolute; top: 0px; left: 0px; width: 500px; height: 500px; "></div>
+  
+  <script type="text/javascript">
+
+    var canvas = document.getElementById("canvas");
+    var context = canvas.getContext("2d");
+
+    var crop = document.getElementById("crop");
+
+    var _back;
+    var _x = 0; 
+    var _y = 0;
+    var _width = canvas.width;
+    var _height = canvas.height;
+    var _image;
+    var newImage = false;
+
+    function image(image){
+      _image = image;
+      newImage = true;
+      combine();
+    }
+    function setX(i){
+      _x = parseInt(i);
+      combine();
+    }
+    function setY(i){
+      _y = parseInt(i);
+      combine();
+    }
+    function setWidth(i){
+      _width = parseInt(i);
+      combine();
+    }
+    function setHeight(i){
+      _height = parseInt(i);
+      combine();
+    }
+
+    var renderNow = false;
+    function combine(){
+      // Will render on next frame
+      renderNow = true;
+    }
+    function processLoop(){
+      requestAnimationFrame(processLoop);
+      if (renderNow) {
+        renderNow = false;
+        render();
+      }
+    }
+    requestAnimationFrame(processLoop);
+    function render(){
+      if (newImage) {
+        if (canvas.width !== _image.width || canvas.height !== _image.height) {
+          canvas.width = _image.width;
+          canvas.height = _image.height;
+        }
+        context.putImageData(_image, 0, 0);
+        newImage = false;
+      }
+      crop.style.left = _x+"px";
+      crop.style.top = _y+"px";
+      crop.style.width = _width+"px";
+      crop.style.height = _height+"px";
+      send();
+    }
+
+    function send(){
+      if (Meemoo.connected("image")) {
+        Meemoo.send("image", context.getImageData(_x, _y, _width, _height) );
+      }
+    }
+
+    Meemoo
+      .setInfo({
+        title: "crop",
+        author: "meemoo",
+        description: "crop image"
+      })
+      .addInputs({
+        image: {
+          action: image,
+          type: "image",
+          description: "image to center and transform"
+        },
+        x: {
+          action: setX,
+          type: "int",
+          description: "x of top-left corner",
+          min: 0,
+          "default": _x
+        },
+        y: {
+          action: setY,
+          type: "int",
+          description: "y of top-left corner",
+          min: 0,
+          "default": _y
+        },
+        width: {
+          action: setWidth,
+          type: "int",
+          description: "width of crop",
+          min: 1,
+          "default": _width
+        },
+        height: {
+          action: setHeight,
+          type: "int",
+          description: "height of crop",
+          min: 1,
+          "default": _height
+        },
+        send: {
+          action: send,
+          type: "bang",
+          description: "send the image"
+        }
+      })
+      .addOutputs({
+        image: {
+          type: "image"
+        }
+      });
+
+    // Transform controls
+    // console.log(
+    // window.TransformHandles
+    //   .create({
+    //     x: _translateX,
+    //     y: _translateY,
+    //     type: "translateXY"
+    //   })
+    // );
+
+  </script>
+  
+</body>
+</html>
