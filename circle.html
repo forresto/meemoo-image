@@ -95,15 +95,28 @@
       context.lineWidth = _strokeWidth;
       combine();
     }
-    var combineWait = 10;
-    var combineTimeout;
+
+
+
+    var renderNow = false;
     function combine(){
-      // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
-      if (combineTimeout) {
-        clearTimeout(combineTimeout);
-      }
-      combineTimeout = setTimeout(combineDo, combineWait);
+      // Will render on next frame
+      renderNow = true;
     }
+    function processLoop(){
+      requestAnimationFrame(processLoop);
+      if (renderNow) {
+        renderNow = false;
+        render();
+      }
+    }
+    requestAnimationFrame(processLoop);
+    function render(){
+      combineDo();
+    }
+
+
+
     function setStyles(){
       context.fillStyle = _color;
       context.strokeStyle = _stroke;

@@ -7,6 +7,7 @@
   <meta name="description" content="combine image layers" />
   
   <script type="text/javascript" src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  <!-- // <script type="text/javascript" src="/meemoo/v1/meemoo.js"></script> -->
   
   <style type="text/css">
     html, body {
@@ -71,15 +72,28 @@
       thisCanvas.getContext("2d").putImageData(image, 0, 0);
       combine();
     }
-    var combineWait = 10;
-    var combineTimeout;
+
+
+
+
+    var renderNow = false;
     function combine(){
-      // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
-      if (combineTimeout) {
-        clearTimeout(combineTimeout);
-      }
-      combineTimeout = setTimeout(combineDo, combineWait);
+      // Will render on next frame
+      renderNow = true;
     }
+    function processLoop(){
+      requestAnimationFrame(processLoop);
+      if (renderNow) {
+        renderNow = false;
+        render();
+      }
+    }
+    requestAnimationFrame(processLoop);
+    function render(){
+      combineDo();
+    }
+
+
     function combineDo(){
       context.clearRect(0, 0, canvas.width, canvas.height);
       for (var i = 0; i < layers.length; i++) {
@@ -96,7 +110,9 @@
     }
 
     function send(){
-      Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
+      if (Meemoo.connected("image")) {
+        Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
+      }
     }
 
     Meemoo

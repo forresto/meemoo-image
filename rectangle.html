@@ -74,15 +74,25 @@
       context.lineWidth = _strokeWidth;
       combine();
     }
-    var combineWait = 10;
-    var combineTimeout;
+
+
+    var renderNow = false;
     function combine(){
-      // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
-      if (combineTimeout) {
-        clearTimeout(combineTimeout);
-      }
-      combineTimeout = setTimeout(combineDo, combineWait);
+      // Will render on next frame
+      renderNow = true;
     }
+    function processLoop(){
+      requestAnimationFrame(processLoop);
+      if (renderNow) {
+        renderNow = false;
+        render();
+      }
+    }
+    requestAnimationFrame(processLoop);
+    function render(){
+      combineDo();
+    }
+
     function setStyles(){
       context.fillStyle = _color;
       context.strokeStyle = _stroke;
@@ -133,7 +143,9 @@
     }
 
     function send(){
-      Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
+      if (Meemoo.connected("image")) {
+        Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
+      }
     }
 
     // HACK send one 2s after load

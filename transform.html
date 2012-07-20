@@ -7,6 +7,8 @@
   <meta name="description" content="scale, translate, and/or rotate image" />
   
   <script type="text/javascript" src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  <!-- // <script type="text/javascript" src="/meemoo/v1/meemoo.js"></script> -->
+  <!-- // <script type="text/javascript" src="/transform-handles/transform-handles.js"></script> -->
   
   <style type="text/css">
     html, body {
@@ -30,28 +32,24 @@
     var forecontext = forecanvas.getContext("2d");
 
     var _back;
-    var _fore = false; 
+    var _fore; 
     var _scale = 1;
     var _translateX = 0;
     var _translateY = 0;
     var _rotate = 0;
     var _clearEvery = true;
 
+    var newBack = false;
+    var newFore = false;
+
     function back(image){
-      if (canvas.width !== image.width || canvas.height !== image.height) {
-        canvas.width = image.width;
-        canvas.height = image.height;
-      }
       _back = image;
+      newBack = true;
       combine();
     }
     function fore(image){
-      if (forecanvas.width !== image.width || forecanvas.height !== image.height) {
-        forecanvas.width = image.width;
-        forecanvas.height = image.height;
-      }
-      forecontext.putImageData(image, 0, 0);
-      _fore = true;
+      _fore = image;
+      newFore = true;
       combine();
     }
     function scale(percent){
@@ -70,17 +68,42 @@
       _rotate = parseFloat(percent) * Math.PI * 2;
       combine();
     }
-    var combineWait = 10;
-    var combineTimeout;
+
+
+
+    var renderNow = false;
     function combine(){
-      // Minimum time to do combine again, so that changing a few variables at the same time doesn't do multiple draws
-      if (combineTimeout) {
-        clearTimeout(combineTimeout);
-      }
-      combineTimeout = setTimeout(combineDo, combineWait);
+      // Will render on next frame
+      renderNow = true;
     }
+    function processLoop(){
+      requestAnimationFrame(processLoop);
+      if (renderNow) {
+        renderNow = false;
+        render();
+      }
+    }
+    requestAnimationFrame(processLoop);
+    function render(){
+      if (newBack) {
+        if (canvas.width !== _back.width || canvas.height !== _back.height) {
+          canvas.width = _back.width;
+          canvas.height = _back.height;
+        }
+        newBack = false;
+      }
+      if (newFore) {
+        if (forecanvas.width !== _fore.width || forecanvas.height !== _fore.height) {
+          forecanvas.width = _fore.width;
+          forecanvas.height = _fore.height;
+        }
+        forecontext.putImageData(_fore, 0, 0);
+        newFore = false;
+      }
+      combineDo();
+    }
+    
     function combineDo(){
-      combineLast = new Date();
       // Clear
       if (_clearEvery) {
         context.clearRect(0, 0, canvas.width, canvas.height);
@@ -119,7 +142,9 @@
     }
 
     function send(){
-      Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
+      if (Meemoo.connected("image")) {
+        Meemoo.send("image", context.getImageData(0, 0, canvas.width, canvas.height) );
+      }
     }
 
     Meemoo
@@ -143,31 +168,31 @@
           action: scale,
           type: "float",
           description: "scale percentage",
-          default: _scale
+          "default": _scale
         },
         translateX: {
           action: translateX,
           type: "float",
           description: "translate x pixels",
-          default: _translateX
+          "default": _translateX
         },
         translateY: {
           action: translateY,
           type: "float",
           description: "translate y pixels",
-          default: _translateY
+          "default": _translateY
         },
         rotate: {
           action: rotate,
           type: "float",
           description: "rotate percentage",
-          default: _rotate
+          "default": _rotate
         },
         clearEvery: {
           action: clearEvery,
           type: "boolean",
           description: "clear the canvas on every draw",
-          default: _clearEvery
+          "default": _clearEvery
         },
         clear: {
           action: clear,
@@ -185,6 +210,17 @@
           type: "image"
         }
       });
+
+    // Transform controls
+    // console.log(
+    // window.TransformHandles
+    //   .create({
+    //     x: _translateX,
+    //     y: _translateY,
+    //     type: "translateXY"
+    //   })
+    // );
+
   </script>
   
 </body>
